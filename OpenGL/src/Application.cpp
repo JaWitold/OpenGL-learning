@@ -24,18 +24,24 @@ int main(void)
         return -2;
     }
     
+    float positions[6] = {0.0f, 0.5f, 0.5f, -0.5f, -0.5f, -0.5f};
+
+    //Create buffer
+    unsigned int buffer;
+    glGenBuffers(1, &buffer);
+
+    //Select buffer and set it type - Array buffer
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+
+    //Put data into buffer
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6, positions, GL_STATIC_DRAW);
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
-        glBegin(GL_TRIANGLE_STRIP);
-        {
-            glVertex2f(0.0f, 0.5f);
-            glVertex2f(0.5f, -0.5f);
-            glVertex2f(-0.5f, -0.5f);
-        }
-        glEnd();
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
