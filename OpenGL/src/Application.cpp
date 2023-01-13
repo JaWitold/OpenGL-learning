@@ -7,23 +7,9 @@
 #include <string>
 #include <sstream>
 
-#define ASSERT(x) if (!(x)) __debugbreak();
-#define GLCall(x) GLClearError(); x; ASSERT(GLLogCall(#x, __FILE__, __LINE__))
-
-static void GLClearError()
-{
-	while (glGetError());
-}
-
-static bool GLLogCall(const char* function, const char* file, const int line)
-{
-	while(const GLenum error = glGetError())
-	{
-		std::cout << "[OpenGL Error] " << error << " " << function << " " << file << ":" << line << std::endl;
-		return false;
-	}
-	return true;
-}
+#include "Renderer.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
 
 struct shader_program_source {
 	std::string vertex_source;
@@ -164,74 +150,77 @@ int main(void)
 		return -2;
 	}
 
-	constexpr float positions[] = {
-		-0.5f, -0.5f,
-		 0.5f, -0.5f,
-		 0.5f,  0.5f,
-		-0.5f,  0.5f,
-	};
-
-	const unsigned int indices[] = {
-		0, 1, 2,
-		2, 3, 0
-	};
-
-	//Generate vertex array object cause it is mandatory to be initialized in CORE profile
-	unsigned int vertex_array;
-	GLCall(glGenVertexArrays(1, &vertex_array));
-	GLCall(glBindVertexArray(vertex_array));
-
-	unsigned int vertex_buffer;
-	GLCall(glGenBuffers(1, &vertex_buffer));
-	GLCall(glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer));
-	GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 4 * 2, positions, GL_STATIC_DRAW));
-
-	GLCall(glEnableVertexAttribArray(0));
-	GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
-
-	unsigned int index_buffer;
-	GLCall(glGenBuffers(1, &index_buffer));
-	GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer));
-	GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * 6, indices, GL_STATIC_DRAW));
-
-	const shader_program_source source = parse_shader("res/shaders/Basic.shader");
-	const unsigned int shader = create_shader(source.vertex_source, source.fragment_source);
-
-	GLCall(const int location = glGetUniformLocation(shader, "u_Color"));
-
-	GLCall(glUseProgram(shader));
-
-	GLCall(glBindVertexArray(0));
-	GLCall(glUseProgram(0));
-	GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
-	GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-
-	float r = 0.0f;
-	float increment = 0.01f;
-
-	/* Loop until the user closes the window */
-	while (!glfwWindowShouldClose(window))
 	{
-		/* Render here */
-		GLCall(glClear(GL_COLOR_BUFFER_BIT));
+		constexpr float positions[] = {
+			-0.5f, -0.5f,
+			 0.5f, -0.5f,
+			 0.5f,  0.5f,
+			-0.5f,  0.5f,
+		};
+
+		const unsigned int indices[] = {
+			0, 1, 2,
+			2, 3, 0
+		};
+
+		//Generate vertex array object cause it is mandatory to be initialized in CORE profile
+		unsigned int vertex_array;
+		GLCall(glGenVertexArrays(1, &vertex_array));
+		GLCall(glBindVertexArray(vertex_array));
+
+		VertexBuffer* vertex_buffer = new VertexBuffer(positions, sizeof(float) * 4 * 2);
+
+		GLCall(glEnableVertexAttribArray(0));
+		GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
+
+		IndexBuffer* index_buffer = new IndexBuffer(indices, 6);
+
+		// unsigned int index_buffer;
+		// GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer));
+		// GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * 6, indices, GL_STATIC_DRAW));
+
+		const shader_program_source source = parse_shader("res/shaders/Basic.shader");
+		const unsigned int shader = create_shader(source.vertex_source, source.fragment_source);
+
+		GLCall(const int location = glGetUniformLocation(shader, "u_Color"));
 
 		GLCall(glUseProgram(shader));
-		GLCall(glUniform4f(location, r, 0.3f, 0.8f, 1.0f));
 
-		GLCall(glBindVertexArray(vertex_array));
-		
-		GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
-		if (r > 1.0f || r < 0.0f)
-			increment = -increment;
-		r += increment;
+		GLCall(glBindVertexArray(0));
+		GLCall(glUseProgram(0));
+		vertex_buffer->Unbind();
+		index_buffer->Unbind();
+		// GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
+		// GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
 
-		/* Swap front and back buffers */
-		glfwSwapBuffers(window);
+		float r = 0.0f;
+		float increment = 0.01f;
 
-		/* Poll for and process events */
-		glfwPollEvents();
+		/* Loop until the user closes the window */
+		while (!glfwWindowShouldClose(window))
+		{
+			/* Render here */
+			GLCall(glClear(GL_COLOR_BUFFER_BIT));
+
+			GLCall(glUseProgram(shader));
+			GLCall(glUniform4f(location, r, 0.3f, 0.8f, 1.0f));
+
+			GLCall(glBindVertexArray(vertex_array));
+			index_buffer->Bind();
+
+			GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+			if (r > 1.0f || r < 0.0f)
+				increment = -increment;
+			r += increment;
+
+			/* Swap front and back buffers */
+			glfwSwapBuffers(window);
+
+			/* Poll for and process events */
+			glfwPollEvents();
+		}
+		GLCall(glDeleteProgram(shader));
 	}
-	GLCall(glDeleteProgram(shader));
 	glfwTerminate();
 	return 0;
 }
