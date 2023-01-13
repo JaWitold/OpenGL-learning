@@ -145,6 +145,10 @@ int main(void)
 	/* Initialize the library */
 	if (!glfwInit())
 		return -1;
+
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	/* Create a windowed mode window and its OpenGL context */
 	GLFWwindow* window = glfwCreateWindow(640, 480, "Hello World", nullptr, nullptr);
 	if (!window)
@@ -172,10 +176,15 @@ int main(void)
 		2, 3, 0
 	};
 
-	unsigned int buffer;
-	GLCall(glGenBuffers(1, &buffer));
-	GLCall(glBindBuffer(GL_ARRAY_BUFFER, buffer));
-	GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 2, positions, GL_STATIC_DRAW));
+	//Generate vertex array object cause it is mandatory to be initialized in CORE profile
+	unsigned int vertex_array;
+	GLCall(glGenVertexArrays(1, &vertex_array));
+	GLCall(glBindVertexArray(vertex_array));
+
+	unsigned int vertex_buffer;
+	GLCall(glGenBuffers(1, &vertex_buffer));
+	GLCall(glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer));
+	GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 4 * 2, positions, GL_STATIC_DRAW));
 
 	GLCall(glEnableVertexAttribArray(0));
 	GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
@@ -187,7 +196,15 @@ int main(void)
 
 	const shader_program_source source = parse_shader("res/shaders/Basic.shader");
 	const unsigned int shader = create_shader(source.vertex_source, source.fragment_source);
+
+	GLCall(const int location = glGetUniformLocation(shader, "u_Color"));
+
 	GLCall(glUseProgram(shader));
+
+	GLCall(glBindVertexArray(0));
+	GLCall(glUseProgram(0));
+	GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
+	GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
 
 	float r = 0.0f;
 	float increment = 0.01f;
@@ -198,10 +215,11 @@ int main(void)
 		/* Render here */
 		GLCall(glClear(GL_COLOR_BUFFER_BIT));
 
-		GLCall(const int location = glGetUniformLocation(shader, "u_Color"));
-		ASSERT(location != -1);
+		GLCall(glUseProgram(shader));
 		GLCall(glUniform4f(location, r, 0.3f, 0.8f, 1.0f));
 
+		GLCall(glBindVertexArray(vertex_array));
+		
 		GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
 		if (r > 1.0f || r < 0.0f)
 			increment = -increment;
