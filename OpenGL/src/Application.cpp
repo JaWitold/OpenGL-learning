@@ -7,6 +7,7 @@
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 #include "Shader.h"
+#include "Texture.h"
 #include "VertexArray.h"
 #include "VertexBufferLayout.h"
 
@@ -36,10 +37,10 @@ int main(void)
 
 	{
 		constexpr float positions[] = {
-			-0.5f, -0.5f,
-			 0.5f, -0.5f,
-			 0.5f,  0.5f,
-			-0.5f,  0.5f,
+			-0.5f, -0.5f, 0.0f, 0.0f,
+			 0.5f, -0.5f, 1.0f, 0.0f,
+			 0.5f,  0.5f, 1.0f, 1.0f,
+			-0.5f,  0.5f, 0.0f, 1.0f
 		};
 
 		const unsigned int indices[] = {
@@ -47,19 +48,28 @@ int main(void)
 			2, 3, 0
 		};
 
+		GLCall(glEnable(GL_BLEND));
+		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 		//Generate vertex array object cause it is mandatory to be initialized in CORE profile
 
 		VertexArray vertex_array;
-		VertexBuffer vertex_buffer(positions, sizeof(float) * 4 * 2);
+		VertexBuffer vertex_buffer(positions, sizeof(float) * 4 * 4);
 
 		VertexBufferLayout layout;
+		layout.Push<float>(2);
 		layout.Push<float>(2);
 		vertex_array.AddBuffer(vertex_buffer, layout);
 		
 		IndexBuffer index_buffer(indices, 6);
 
-		
-		Shader shader("res/shaders/Basic.shader");
+		Shader shader("res/shaders/Texture.shader");
+
+
+		shader.Bind();
+		shader.SetUniform1i("u_Texture", 0);
+
+		Texture texture("res/textures/ChernoLogo.png");
+		texture.Bind();
 
 		shader.Unbind();
 		vertex_buffer.Unbind();
