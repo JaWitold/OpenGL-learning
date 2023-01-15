@@ -11,6 +11,9 @@
 #include "VertexArray.h"
 #include "VertexBufferLayout.h"
 
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+
 int main(void)
 {
 	/* Initialize the library */
@@ -53,22 +56,23 @@ int main(void)
 		//Generate vertex array object cause it is mandatory to be initialized in CORE profile
 
 		VertexArray vertex_array;
-		VertexBuffer vertex_buffer(positions, sizeof(float) * 4 * 4);
+		const VertexBuffer vertex_buffer(positions, sizeof(float) * 4 * 4);
 
 		VertexBufferLayout layout;
 		layout.Push<float>(2);
 		layout.Push<float>(2);
 		vertex_array.AddBuffer(vertex_buffer, layout);
-		
-		IndexBuffer index_buffer(indices, 6);
+
+		const IndexBuffer index_buffer(indices, 6);
+
+		const glm::mat4 proj = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f);
 
 		Shader shader("res/shaders/Texture.shader");
-
-
 		shader.Bind();
+		shader.SetUniformMat4f("u_MVP", proj);
 		shader.SetUniform1i("u_Texture", 0);
 
-		Texture texture("res/textures/ChernoLogo.png");
+		const Texture texture("res/textures/ChernoLogo.png");
 		texture.Bind();
 
 		shader.Unbind();
@@ -76,7 +80,7 @@ int main(void)
 		vertex_array.Unbind();
 		index_buffer.Unbind();
 
-		Renderer renderer;
+		const Renderer renderer;
 
 		float r = 0.0f;
 		float increment = 0.01f;
