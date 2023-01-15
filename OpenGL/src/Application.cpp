@@ -19,7 +19,7 @@ int main(void)
 	/* Initialize the library */
 	if (!glfwInit())
 		return -1;
-
+	
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -65,14 +65,18 @@ int main(void)
 
 		const IndexBuffer index_buffer(indices, 6);
 
-		const glm::mat4 proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
-		const glm::vec4 vp(100.0f, 100.0f, 0.0f, 1.0f);
+		int width, height;
+		glfwGetWindowSize(window, &width, &height);
 
-		glm::vec4 result = proj * vp;
+		const glm::mat4 proj = glm::ortho(0.0f, (float)width, 0.0f, (float)height, -1.0f, 1.0f);
+		const glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(-100, 0, 0));
+		const glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(200, 200, 0));
+
+		const glm::mat4 mvp = proj * view * model;
 
 		Shader shader("res/shaders/Texture.shader");
 		shader.Bind();
-		shader.SetUniformMat4f("u_MVP", proj);
+		shader.SetUniformMat4f("u_MVP", mvp);
 		shader.SetUniform1i("u_Texture", 0);
 
 		const Texture texture("res/textures/ChernoLogo.png");
