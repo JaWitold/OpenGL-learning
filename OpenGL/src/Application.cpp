@@ -4,18 +4,11 @@
 #include <GLFW/glfw3.h>
 
 #include "Renderer.h"
-#include "VertexBuffer.h"
-#include "IndexBuffer.h"
-#include "Shader.h"
-#include "Texture.h"
-#include "VertexArray.h"
-#include "VertexBufferLayout.h"
-
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
+
+#include "tests/TestClearColor.h"
 
 int main(void)
 {
@@ -41,52 +34,12 @@ int main(void)
 		return -2;
 	}
 
+	std::cout << glGetString(GL_VERSION) << std::endl;
+
 	{
-		constexpr float positions[] = {
-			-50.0f, -50.0f, 0.0f, 0.0f,
-			 50.0f, -50.0f, 1.0f, 0.0f,
-			 50.0f,  50.0f, 1.0f, 1.0f,
-			-50.0f,  50.0f, 0.0f, 1.0f
-		};
-
-		const unsigned int indices[] = {
-			0, 1, 2,
-			2, 3, 0
-		};
-
 		GLCall(glEnable(GL_BLEND));
 		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-		//Generate vertex array object cause it is mandatory to be initialized in CORE profile
 
-		VertexArray vertex_array;
-		const VertexBuffer vertex_buffer(positions, sizeof(float) * 4 * 4);
-
-		VertexBufferLayout layout;
-		layout.Push<float>(2);
-		layout.Push<float>(2);
-		vertex_array.AddBuffer(vertex_buffer, layout);
-
-		const IndexBuffer index_buffer(indices, 6);
-
-		int width, height;
-		glfwGetWindowSize(window, &width, &height);
-
-		const glm::mat4 proj = glm::ortho(0.0f, (float)width, 0.0f, (float)height, -1.0f, 1.0f);
-		const glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
-		
-		Shader shader("res/shaders/Texture.shader");
-		shader.Bind();
-		shader.SetUniform1i("u_Texture", 0);
-
-		const Texture texture("res/textures/ChernoLogo.png");
-		texture.Bind();
-
-		shader.Unbind();
-		vertex_buffer.Unbind();
-		vertex_array.Unbind();
-		index_buffer.Unbind();
-
-		const Renderer renderer;
 
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -95,46 +48,28 @@ int main(void)
 		ImGui_ImplGlfwGL3_Init(window, true);
 		ImGui::StyleColorsDark();
 
-		glm::vec3 translationA(200.0f, 200.0f, 0.0f);
-		glm::vec3 translationB(300.0f, 200.0f, 0.0f);
+		test::TestClearColor tests[] = {
+			test::TestClearColor(),
+
+		};
 
 		/* Loop until the user closes the window */
 		while (!glfwWindowShouldClose(window))
 		{
-			renderer.Clear();
-
-			ImGui_ImplGlfwGL3_NewFrame();
-
-			/* Render here */
-			shader.Bind();
- 
+			for (auto test : tests)
 			{
-				const glm::mat4 model = glm::translate(glm::mat4(1.0f), translationA);
-				const glm::mat4 mvp = proj * view * model;
+				test.OnUpdate(0.0f);
+				test.OnRender(); 
 
-				shader.SetUniformMat4f("u_MVP", mvp);
-				renderer.Draw(vertex_array, index_buffer, shader);
+				ImGui_ImplGlfwGL3_NewFrame();
+
+				test.onImGuiRender();
 			}
-
-			{
-				const glm::mat4 model = glm::translate(glm::mat4(1.0f), translationB);
-				const glm::mat4 mvp = proj * view * model;
-				shader.SetUniformMat4f("u_MVP", mvp);
-				renderer.Draw(vertex_array, index_buffer, shader);
-			}
-
-			{
-				ImGui::SliderFloat3("TranslationA", &translationA.x, 0.0f, (float)width);        
-				ImGui::SliderFloat3("TranslationB", &translationB.x, 0.0f, (float)width);        
-				ImGui::Text("Application average %.1f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-			}
-
+			
 			ImGui::Render();
 			ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
-			/* Swap front and back buffers */
-			glfwSwapBuffers(window);
 
-			/* Poll for and process events */
+			glfwSwapBuffers(window);
 			glfwPollEvents();
 		}
 	}
