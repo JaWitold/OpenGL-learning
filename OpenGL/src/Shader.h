@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <unordered_map>
+#include <GL/glew.h>
 
 #include "glm/glm.hpp"
 
@@ -15,7 +16,7 @@ private:
 	unsigned int m_RendererID;
 	std::string m_FilePath;
 	//caching for uniform
-	std::unordered_map <std::string, int> m_UniformLocationCache;
+	mutable std::unordered_map <std::string, GLint> m_UniformLocationCache;
 public:
 	Shader(const std::string& filePath);
 	~Shader();
@@ -31,7 +32,7 @@ public:
 	void SetUniformMat4f(const std::string& name, const glm::mat4& matrix);
 
 private:
-	int getUniformLocation(const std::string& name);
+	GLint getUniformLocation(const std::string& name) const;
 	ShaderProgramSource ParseShader(const std::string& file_path);
 
 	unsigned int CompileShader(unsigned type, const std::string& source);

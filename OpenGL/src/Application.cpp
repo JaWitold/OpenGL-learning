@@ -9,6 +9,22 @@
 #include "imgui/imgui_impl_glfw_gl3.h"
 
 #include "tests/TestClearColor.h"
+#include "tests/TestCube.h"
+#include "tests/TestTexture2D.h"
+
+void OpenGLLogMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+{
+	
+	std::cout << "[OpenGL Debug HIGH] " <<  message << std::endl;
+			
+		
+}
+void EnableGLDebugging()
+{
+	glDebugMessageCallback(GLDEBUGPROC(OpenGLLogMessage), nullptr);
+	glEnable(GL_DEBUG_OUTPUT);
+	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+}
 
 int main(void)
 {
@@ -50,10 +66,12 @@ int main(void)
 		ImGui::StyleColorsDark();
 
 		test::Test* currentTest = nullptr;
-		test::TestMenu* test_menu = new test::TestMenu(currentTest);
-		currentTest = test_menu;
+		test::TestMenu* testMenu = new test::TestMenu(currentTest);
+		currentTest = new test::TestCube();
 
-		test_menu->RegisterTest<test::TestClearColor>("Clear Color");
+		// testMenu->RegisterTest<test::TestClearColor>("Clear Color");
+		// testMenu->RegisterTest<test::TestTexture2D>("Texture 2D");
+		// testMenu->RegisterTest<test::TestCube>("Cube");
 
 		/* Loop until the user closes the window */
 		while (!glfwWindowShouldClose(window))
@@ -69,11 +87,10 @@ int main(void)
 				currentTest->OnRender();
 
 				ImGui::Begin("Test");
-
-				if(currentTest != test_menu && ImGui::Button("<-"))
+				if(currentTest != testMenu && ImGui::Button("<-"))
 				{
 					delete currentTest;
-					currentTest = test_menu;
+					currentTest = testMenu;
 				}
 				currentTest->onImGuiRender();
 				ImGui::End();
@@ -87,8 +104,8 @@ int main(void)
 		}
 
 		delete currentTest;
-		if (currentTest != test_menu)
-			delete test_menu;
+		if (currentTest != testMenu)
+			delete testMenu;
 	}
 	
 	ImGui_ImplGlfwGL3_Shutdown();

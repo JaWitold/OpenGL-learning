@@ -30,7 +30,7 @@ namespace test
 		
 		void onImGuiRender() override;
 	private:
-		std::vector<std::pair<std::string, std::function<Test*()>>> m_Tests;
 		Test*& m_CurrentTest;
+		std::vector<std::pair<std::string, std::function<Test*()>>> m_Tests;
 	};
 }
