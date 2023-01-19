@@ -42,7 +42,7 @@ namespace test
 		m_Shader = std::make_unique<Shader>("res/shaders/Texture.shader");
 		m_Shader->Bind();
 		
-		m_Texture = std::make_unique<Texture>("res/textures/ChernoLogo.png");
+		m_Texture = std::make_unique<Texture>("res/textures/LEFT.png");
 		m_Shader->SetUniform1i("u_Texture", 0);
 	}
 
@@ -74,12 +74,12 @@ namespace test
 			renderer.Draw(*m_VertexArray, *m_IndexBuffer, *m_Shader);
 		}
 		
-		// {
-		// 	const glm::mat4 model = glm::translate(glm::mat4(1.0f), m_TranslationB);
-		// 	const glm::mat4 mvp = m_Proj * m_View * model;
-		// 	m_Shader->SetUniformMat4f("u_MVP", mvp);
-		// 	renderer.Draw(*m_VertexArray, *m_IndexBuffer, *m_Shader);
-		// }
+		{
+			const glm::mat4 model = glm::translate(glm::mat4(1.0f), m_TranslationB);
+			const glm::mat4 mvp = m_Proj * m_View * model;
+			m_Shader->SetUniformMat4f("u_MVP", mvp);
+			renderer.Draw(*m_VertexArray, *m_IndexBuffer, *m_Shader);
+		}
 	}
 
 	void TestTexture2D::onImGuiRender()

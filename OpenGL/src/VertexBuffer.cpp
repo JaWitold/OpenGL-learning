@@ -13,7 +13,7 @@ VertexBuffer::VertexBuffer(const void* data, unsigned size)
 VertexBuffer::~VertexBuffer()
 {
 	// Unbind();
-	GLCall(glDeleteBuffers(GL_ARRAY_BUFFER, &m_RendererID));
+	GLCall(glDeleteBuffers(1, &m_RendererID));
 }
 
 

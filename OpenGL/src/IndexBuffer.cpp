@@ -13,7 +13,7 @@ IndexBuffer::IndexBuffer(const unsigned int* data, unsigned count)
 
 IndexBuffer::~IndexBuffer()
 {
-	GLCall(glDeleteBuffers(GL_ELEMENT_ARRAY_BUFFER, &m_RendererID));
+	GLCall(glDeleteBuffers(1, &m_RendererID));
 }
 
 

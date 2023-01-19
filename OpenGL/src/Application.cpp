@@ -67,11 +67,11 @@ int main(void)
 
 		test::Test* currentTest = nullptr;
 		test::TestMenu* testMenu = new test::TestMenu(currentTest);
-		currentTest = new test::TestCube();
+		currentTest = testMenu;
 
-		// testMenu->RegisterTest<test::TestClearColor>("Clear Color");
-		// testMenu->RegisterTest<test::TestTexture2D>("Texture 2D");
-		// testMenu->RegisterTest<test::TestCube>("Cube");
+		testMenu->RegisterTest<test::TestClearColor>("Clear Color");
+		testMenu->RegisterTest<test::TestTexture2D>("Texture 2D");
+		testMenu->RegisterTest<test::TestCube>("Cube");
 
 		/* Loop until the user closes the window */
 		while (!glfwWindowShouldClose(window))
