@@ -11,6 +11,7 @@
 #include "tests/TestClearColor.h"
 #include "tests/TestCube.h"
 #include "tests/TestTexture2D.h"
+#include "tests/TestBatch.h"
 
 void OpenGLLogMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
@@ -72,6 +73,7 @@ int main(void)
 		testMenu->RegisterTest<test::TestClearColor>("Clear Color");
 		testMenu->RegisterTest<test::TestTexture2D>("Texture 2D");
 		testMenu->RegisterTest<test::TestCube>("Cube");
+		testMenu->RegisterTest<test::TestBatch>("Batch");
 
 		/* Loop until the user closes the window */
 		while (!glfwWindowShouldClose(window))
